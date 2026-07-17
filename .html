@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة المدن العالمية</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Tajawal:wght@400;500;700;900&display=swap');
+
+  :root{
+    --navy:#0F1E33;
+    --navy2:#16283F;
+    --gold:#D4AF37;
+    --cream:#F3ECDB;
+    --stamp-red:#B5442E;
+    --stamp-green:#3E7D5C;
+    --line:rgba(212,175,55,0.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(circle at 50% 0%, #1a2e4a 0%, #0b1626 65%);
+    color:var(--cream);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    padding:16px;
+  }
+  h1{
+    font-family:'Cormorant Garamond',serif;
+    text-align:center;
+    font-size:2.2rem;
+    letter-spacing:1px;
+    margin:6px 0 2px;
+    color:var(--gold);
+  }
+  .subtitle{
+    text-align:center;
+    font-size:0.85rem;
+    color:#9fb3c8;
+    margin-bottom:18px;
+    letter-spacing:2px;
+  }
+
+  #setup{
+    max-width:420px;
+    margin:40px auto;
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px;
+  }
+  #setup label{display:block;margin-bottom:6px;font-size:0.9rem;color:#c9d6e3;}
+  #setup select, #setup input{
+    width:100%;
+    padding:10px;
+    margin-bottom:16px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:#0d1826;
+    color:var(--cream);
+    font-family:'Tajawal',sans-serif;
+    font-size:1rem;
+  }
+  .player-name-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .player-name-row span{width:24px;height:24px;border-radius:50%;flex-shrink:0;}
+
+  .screen-card{
+    max-width:440px;
+    margin:40px auto;
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 22px;
+    text-align:center;
+    position:relative;
+  }
+  .screen-card h1{margin-top:4px;}
+  .screen-title{
+    font-family:'Cormorant Garamond',serif;
+    color:var(--gold);
+    font-size:1.4rem;
+    margin:22px 0 18px;
+  }
+  .settings-btn{
+    position:absolute;
+    top:16px;left:16px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--gold);
+    padding:6px 10px;
+    font-size:0.78rem;
+    border-radius:8px;
+  }
+  .back-btn{
+    position:absolute;
+    top:16px;right:16px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--cream);
+    padding:6px 10px;
+    font-size:0.78rem;
+    border-radius:8px;
+  }
+  .mode-card{
+    background:#0d1826;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:12px;
+    cursor:pointer;
+    transition:border-color .2s, transform .2s;
+    text-align:right;
+  }
+  .mode-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .mode-card.disabled{opacity:0.45;cursor:not-allowed;}
+  .mode-card.disabled:hover{transform:none;border-color:var(--line);}
+  .mode-icon{font-size:1.8rem;margin-bottom:4px;}
+  .mode-name{font-weight:900;font-size:1.05rem;color:var(--cream);}
+  .mode-desc{font-size:0.78rem;color:#9fb3c8;margin-top:2px;}
+  .settings-row{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;margin-bottom:16px;text-align:right;
+  }
+  .settings-row label{font-size:0.9rem;color:#c9d6e3;flex-shrink:0;}
+  .screen-card input[type="text"]{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:#0d1826;
+    color:var(--cream);
+    font-family:'Tajawal',sans-serif;
+    font-size:1rem;
+  }
+
+  button{
+    font-family:'Tajawal',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    font-weight:700;
+  }
+  .btn-primary{
+    background:var(--gold);
+    color:#1a1206;
+    padding:12px;
+    width:100%;
+    font-size:1rem;
+  }
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-secondary{
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:10px 16px;
+  }
+  .btn-danger{
+    background:var(--stamp-red);
+    color:#fff;
+    padding:10px 16px;
+  }
+
+  #game{display:none;max-width:1100px;margin:0 auto;}
+
+  #board-wrap{
+    margin:0 auto;
+    max-width:980px;
+    width:100%;
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+  }
+  .board-extra{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:14px;
+  }
+  .board-extra .panel{flex:1;min-width:220px;margin-bottom:0;}
+  .board-grid{
+    display:grid;
+    direction:ltr;
+    grid-template-columns:repeat(8, 1fr);
+    grid-template-rows:repeat(10, 1fr);
+    gap:3px;
+    aspect-ratio:8/10;
+    width:100%;
+  }
+  .tile{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    text-align:center;
+    border-radius:6px;
+    background:#e9e4d6;
+    font-size:0.5rem;
+    line-height:1.1;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s;
+    box-shadow:0 2px 4px rgba(0,0,0,0.35);
+    min-height:68px;
+  }
+  .tile-top{
+    background:#444;
+    color:#fff;
+    font-weight:900;
+    font-size:0.68rem;
+    padding:3px 1px;
+    flex-shrink:0;
+  }
+  .tile-name{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    color:#1a1206;
+    font-weight:800;
+    padding:3px 2px;
+    font-size:0.66rem;
+    letter-spacing:0.2px;
+    white-space:normal;
+    word-break:break-word;
+  }
+  .tile.corner{
+    background:#182840;
+    justify-content:center;
+    align-items:center;
+    color:var(--cream);
+  }
+  .tile.corner .corner-icon{font-size:1.4rem;}
+  .tile.corner .corner-name{font-size:0.55rem;font-weight:900;margin-top:2px;color:var(--gold);}
+  .tile.current{transform:scale(1.08);box-shadow:0 0 0 2px var(--gold), 0 4px 10px rgba(0,0,0,0.5);z-index:5;}
+  .tile .owner-dot{
+    position:absolute;top:2px;left:2px;
+    width:8px;height:8px;border-radius:50%;
+    border:1px solid #fff;
+    z-index:2;
+  }
+  .owner-bar{
+    height:8px;
+    width:100%;
+    flex-shrink:0;
+    transition:background .2s;
+  }
+
+  .tile.tile-start{
+    transform:scale(1.22);
+    z-index:6;
+    box-shadow:0 0 0 2px var(--gold), 0 5px 12px rgba(0,0,0,0.5);
+  }
+  .tile.tile-start .corner-icon{font-size:1.9rem;}
+  .tile.tile-start .corner-name{font-size:0.68rem;}
+  .tile.current.tile-start{transform:scale(1.28);}
+  .center-area{
+    grid-column:2 / 8;
+    grid-row:2 / 10;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 40%),
+      linear-gradient(160deg,#9fb9cc,#7f9db3);
+    border:2px solid #eef1f4;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    text-align:center;
+    padding:8px 6px;
+    gap:3px;
+    position:relative;
+    overflow-y:auto;
+  }
+  .center-area .building{font-size:clamp(1.3rem,4.5vw,2.2rem);filter:drop-shadow(0 6px 8px rgba(0,0,0,0.35));}
+  .center-area .brand{
+    font-family:'Cormorant Garamond',serif;
+    color:#1a2e44;
+    font-weight:700;
+    font-size:clamp(0.8rem, 2.4vw, 1.25rem);
+    letter-spacing:1.5px;
+  }
+  .center-area .turn-label{
+    font-size:0.62rem;
+    color:#2c4258;
+  }
+  .center-area .turn-name{
+    font-size:clamp(0.8rem,2vw,1.05rem);
+    font-weight:900;
+    color:#1a2e44;
+    margin-bottom:2px;
+  }
+  .center-area .dice-row{margin:4px 0 8px;gap:10px;}
+  .center-area .die{
+    width:clamp(32px,9vw,48px);
+    height:clamp(32px,9vw,48px);
+    font-size:clamp(1rem,3vw,1.5rem);
+  }
+  .center-area .die.rolling{animation:diceShake 0.28s ease-in-out infinite;}
+  @keyframes diceShake{
+    0%{transform:rotate(0deg) scale(1);}
+    25%{transform:rotate(-14deg) scale(1.06);}
+    50%{transform:rotate(10deg) scale(0.94);}
+    75%{transform:rotate(-8deg) scale(1.05);}
+    100%{transform:rotate(0deg) scale(1);}
+  }
+  .center-area #rollBtn, .center-area #endTurnBtn{
+    width:88%;
+    max-width:220px;
+    padding:8px;
+    font-size:0.8rem;
+    margin:0 auto 4px;
+  }
+  .center-props{
+    width:100%;
+    max-width:280px;
+    background:rgba(13,24,38,0.72);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:8px;
+    padding:6px 8px;
+    margin-top:4px;
+  }
+  .center-props h4{
+    margin:0 0 4px;
+    font-size:0.72rem;
+    color:var(--gold);
+    font-family:'Cormorant Garamond',serif;
+    letter-spacing:0.5px;
+  }
+  .center-props #myPropsList{max-height:96px;overflow-y:auto;}
+  .center-props .prop-row{padding:4px 6px;margin-bottom:4px;}
+  .center-props .prop-name{font-size:0.65rem;}
+  .center-props .btn-mini{font-size:0.6rem;padding:3px 6px;}
+  .center-notice{
+    position:absolute;
+    top:6px;left:8px;right:8px;
+    background:rgba(10,18,30,0.94);
+    border:1px solid var(--gold);
+    border-radius:8px;
+    padding:7px 9px;
+    font-size:0.7rem;
+    line-height:1.4;
+    color:var(--cream);
+    opacity:0;
+    transform:translateY(-8px);
+    transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+    z-index:20;
+  }
+  .center-notice.show{opacity:1;transform:translateY(0);}
+  .center-notice.notice-danger{border-color:var(--stamp-red);}
+  .center-notice.notice-success{border-color:var(--stamp-green);}
+  .tokens-on-tile{
+    position:absolute;inset:0;
+    pointer-events:none;
+    z-index:3;
+  }
+  .token{
+    position:absolute;
+    width:11px;height:11px;
+    border-radius:50%;
+    border:1px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.4rem;
+    font-weight:900;
+    color:#fff;
+    text-shadow:0 1px 1px rgba(0,0,0,0.6);
+    box-shadow:0 1px 2px rgba(0,0,0,0.5);
+  }
+  .token.corner-tl{top:1px;left:1px;}
+  .token.corner-tr{top:1px;right:1px;}
+  .token.corner-bl{bottom:1px;left:1px;}
+  .token.corner-br{bottom:1px;right:1px;}
+
+  .panel{
+    background:var(--navy2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+  }
+  .panel h3{
+    margin:0 0 10px;
+    font-family:'Cormorant Garamond',serif;
+    color:var(--gold);
+    font-size:1.2rem;
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+
+  .player-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:6px;
+    background:#0d1826;
+    opacity:0.55;
+  }
+  .player-card.active{
+    opacity:1;
+    box-shadow:0 0 0 1.5px var(--gold);
+  }
+  .player-card .dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;}
+  .player-card .pname{font-weight:700;flex:1;}
+  .player-card .pcash{color:var(--gold);font-size:0.85rem;}
+  .player-card.bankrupt .pname{text-decoration:line-through;color:#666;}
+
+  #myPropsList{max-height:180px;overflow-y:auto;}
+  .prop-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    padding:6px 8px;
+    border-radius:8px;
+    background:#0d1826;
+    margin-bottom:6px;
+  }
+  .prop-name{font-size:0.8rem;color:#dbe6f0;flex:1;}
+  .prop-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-mini{
+    font-size:0.7rem;
+    padding:5px 8px;
+    border-radius:6px;
+  }
+  .btn-build{background:var(--stamp-green);color:#fff;}
+  .btn-sell{background:var(--stamp-red);color:#fff;}
+  #dice-area{text-align:center;}
+  .dice-row{display:flex;justify-content:center;gap:14px;margin:10px 0 16px;}
+  .die{
+    width:52px;height:52px;
+    background:var(--cream);
+    color:#1a1206;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.6rem;font-weight:900;
+    box-shadow:0 3px 0 #b8a45f;
+  }
+  #log{
+    max-height:150px;
+    overflow-y:auto;
+    font-size:0.8rem;
+    color:#b8c6d6;
+    line-height:1.6;
+  }
+  #log div{border-bottom:1px dashed var(--line);padding:3px 0;}
+
+  .modal-bg{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(5,10,18,0.75);
+    align-items:center;justify-content:center;
+    z-index:50;
+    padding:16px;
+  }
+  .modal{
+    background:var(--navy2);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    padding:24px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+  }
+  .modal h2{font-family:'Cormorant Garamond',serif;color:var(--gold);margin-top:0;}
+  .modal .actions{display:flex;gap:10px;margin-top:18px;}
+  .modal .actions button{flex:1;}
+  .trade-partner-btn{
+    display:block;width:100%;padding:10px;margin-bottom:8px;
+    background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.4);
+    border-radius:8px;color:#eee;font-family:'Tajawal',sans-serif;font-weight:700;
+    cursor:pointer;font-size:0.9rem;
+  }
+  .trade-partner-btn:hover{border-color:var(--gold);background:rgba(212,175,55,0.12);}
+  .trade-columns{display:flex;gap:12px;text-align:right;}
+  .trade-col{flex:1;min-width:0;}
+  .trade-col h4{color:var(--gold);margin:0 0 8px;font-size:0.85rem;}
+  .trade-props{max-height:150px;overflow-y:auto;margin-bottom:10px;}
+  .trade-prop-row{display:flex;align-items:center;gap:6px;font-size:0.78rem;padding:4px 0;color:#ddd;}
+  .trade-prop-row input{flex-shrink:0;}
+  .trade-empty{color:#8fa3b8;font-size:0.75rem;}
+  .trade-col label{display:block;font-size:0.78rem;color:#ccc;}
+  .trade-col input[type="number"]{
+    width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid rgba(212,175,55,0.4);
+    background:rgba(255,255,255,0.05);color:#fff;font-family:'Tajawal',sans-serif;
+  }
+
+  .stamp{
+    display:inline-block;
+    border:2px solid var(--stamp-green);
+    color:var(--stamp-green);
+    padding:2px 10px;
+    border-radius:6px;
+    transform:rotate(-4deg);
+    font-weight:900;
+    font-size:0.8rem;
+    margin-bottom:8px;
+  }
+  #winner-screen{display:none;text-align:center;padding:40px 20px;}
+  #winner-screen h1{font-size:2.6rem;}
+  @media (max-width:700px){
+    #board-wrap{padding:6px;}
+    .board-extra{flex-direction:column;gap:8px;margin-top:8px;}
+    .panel{padding:8px;}
+    .panel h3{font-size:0.95rem;margin-bottom:6px;padding-bottom:4px;}
+    .player-card{padding:6px 7px;gap:6px;}
+    .player-card .dot{width:14px;height:14px;}
+    .player-card .pname{font-size:0.8rem;}
+    .player-card .pcash{font-size:0.72rem;}
+    #log{max-height:70px;font-size:0.68rem;}
+    .die{width:44px;height:44px;font-size:1.3rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Firebase (وضع أونلاين) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<!-- ============ TITLE SCREEN ============ -->
+<div id="title-screen" class="screen-card">
+  <h1>لعبة المدن العالمية</h1>
+  <div class="subtitle">MONOPOLY OF NATIONS — نسخة قابلة للتعديل</div>
+  <button class="btn-primary" onclick="playClickSound();showScreen('connection-screen')">ابدأ</button>
+</div>
+
+<!-- ============ ONLINE / OFFLINE SCREEN ============ -->
+<div id="connection-screen" class="screen-card" style="display:none;">
+  <button class="back-btn" onclick="playClickSound();showScreen('title-screen')">« رجوع</button>
+  <h2 class="screen-title">شلون تحب تلعب؟</h2>
+  <div class="mode-card" onclick="playClickSound();chooseConnection('online')">
+    <div class="mode-icon">🌐</div>
+    <div class="mode-name">أونلاين</div>
+    <div class="mode-desc">العب مع أصدقائك من أجهزة مختلفة</div>
+  </div>
+  <div class="mode-card" onclick="playClickSound();chooseConnection('offline')">
+    <div class="mode-icon">📴</div>
+    <div class="mode-name">أوفلاين</div>
+    <div class="mode-desc">العب من نفس الجهاز (تمرير الدور)</div>
+  </div>
+</div>
+
+<!-- ============ ONLINE LOBBY SCREEN ============ -->
+<div id="online-lobby-screen" class="screen-card" style="display:none;">
+  <button class="back-btn" onclick="playClickSound();showScreen('connection-screen')">« رجوع</button>
+  <h2 class="screen-title">اللعب أونلاين</h2>
+  <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+    <label>اسمك</label>
+    <input type="text" id="onlineNameInput" placeholder="اكتب اسمك">
+  </div>
+  <button class="btn-primary" style="margin-bottom:16px;" onclick="playClickSound();createRoom()">🆕 إنشاء غرفة جديدة</button>
+  <div style="border-top:1px dashed var(--line);margin-top:6px;padding-top:16px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9rem;color:#c9d6e3;">أو انضم لغرفة موجودة</label>
+    <input type="text" id="joinCodeInput" placeholder="كود الغرفة" style="text-align:center;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">
+    <button class="btn-secondary" style="width:100%;" onclick="playClickSound();joinRoom()">🔑 انضمام</button>
+  </div>
+  <div id="onlineLobbyError" style="color:var(--stamp-red);font-size:0.8rem;margin-top:12px;min-height:1em;"></div>
+</div>
+
+<!-- ============ ONLINE WAITING ROOM ============ -->
+<div id="online-waiting-screen" class="screen-card" style="display:none;">
+  <h2 class="screen-title">غرفة الانتظار</h2>
+  <div style="font-size:0.85rem;color:#9fb3c8;margin-bottom:6px;">كود الغرفة (شاركه مع أصدقائك)</div>
+  <div id="onlineRoomCodeDisplay" style="font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:5px;margin-bottom:16px;"></div>
+  <div id="onlineWaitingPlayers" style="margin-bottom:18px;"></div>
+  <button class="btn-primary" id="onlineStartBtn" style="display:none;" onclick="playClickSound();startOnlineGame()">ابدأ اللعبة</button>
+</div>
+
+<!-- ============ MODES SCREEN ============ -->
+<div id="modes-screen" class="screen-card" style="display:none;">
+  <button class="back-btn" onclick="playClickSound();showScreen('connection-screen')">« رجوع</button>
+  <button class="settings-btn" onclick="playClickSound();openSettings()">⚙️ الإعدادات</button>
+  <h2 class="screen-title">اختر طور اللعب</h2>
+  <div id="modeIndicator" style="font-size:0.75rem;color:#9fb3c8;margin-top:-10px;margin-bottom:14px;"></div>
+  <div class="mode-card" onclick="playClickSound();showScreen('setup')">
+    <div class="mode-icon">🎲</div>
+    <div class="mode-name">كلاسيك</div>
+    <div class="mode-desc">اللعبة التقليدية بكل قوانينها المعروفة</div>
+  </div>
+  <div class="mode-card disabled">
+    <div class="mode-icon">🔒</div>
+    <div class="mode-name">أطوار جديدة قريبًا</div>
+    <div class="mode-desc">راح تنضاف لاحقًا</div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS SCREEN ============ -->
+<div id="settings-screen" class="screen-card" style="display:none;">
+  <button class="back-btn" onclick="playClickSound();showScreen('modes-screen')">« رجوع</button>
+  <h2 class="screen-title">الإعدادات</h2>
+  <div class="settings-row">
+    <label>الصوت</label>
+    <button class="btn-secondary" id="soundToggleBtn" onclick="toggleSound()">🔊 مفعّل</button>
+  </div>
+  <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+    <label>اسمك</label>
+    <input type="text" id="myNameInput" placeholder="اكتب اسمك هنا">
+  </div>
+  <button class="btn-primary" onclick="playClickSound();saveMyName()">حفظ</button>
+</div>
+
+<!-- ============ SETUP SCREEN ============ -->
+<div id="setup" style="display:none;position:relative;padding-top:54px;">
+  <button class="back-btn" onclick="playClickSound();showScreen('modes-screen')">« رجوع</button>
+  <label>عدد اللاعبين</label>
+  <select id="playerCount">
+    <option value="2">لاعبان</option>
+    <option value="3">3 لاعبين</option>
+    <option value="4" selected>4 لاعبين</option>
+  </select>
+
+  <div id="nameInputs"></div>
+
+  <button class="btn-primary" onclick="playClickSound();startGame()">ابدأ اللعبة</button>
+</div>
+
+<!-- ============ GAME SCREEN ============ -->
+<div id="game">
+  <div id="board-wrap">
+    <div id="board-grid-container"></div>
+    <div class="board-extra">
+      <div class="panel">
+        <h3>اللاعبون</h3>
+        <div id="players-list"></div>
+      </div>
+      <div class="panel">
+        <h3>سجل الأحداث</h3>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="winner-screen">
+  <div class="stamp">GAME OVER</div>
+  <h1 id="winnerText"></h1>
+  <button class="btn-primary" style="max-width:220px;margin:20px auto;" onclick="location.reload()">لعبة جديدة</button>
+</div>
+
+<!-- ============ MODALS ============ -->
+<div class="modal-bg" id="buyModal">
+  <div class="modal">
+    <div class="stamp" id="buyGroupLabel">PROPERTY</div>
+    <h2 id="buyTileName"></h2>
+    <p id="buyTilePrice"></p>
+    <div class="actions">
+      <button class="btn-secondary" onclick="playClickSound();skipBuy()">تجاهل</button>
+      <button class="btn-primary" onclick="confirmBuy()">اشترِ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="tradeModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="stamp">TRADE</div>
+    <h2>مقايضة</h2>
+    <div id="tradePartnerStep">
+      <p style="color:#ccc;font-size:0.85rem;">اختر لاعب تسوي وياه مقايضة:</p>
+      <div id="tradePartnerList"></div>
+      <div class="actions">
+        <button class="btn-secondary" onclick="playClickSound();skipTrade()">تجاهل</button>
+      </div>
+    </div>
+    <div id="tradeOfferStep" style="display:none;">
+      <div class="trade-columns">
+        <div class="trade-col">
+          <h4 id="tradeMyName">أنت تعطي</h4>
+          <div class="trade-props" id="tradeMyProps"></div>
+          <label>فلوس تعطيها
+            <input type="number" id="tradeMyCash" min="0" value="0">
+          </label>
+        </div>
+        <div class="trade-col">
+          <h4 id="tradePartnerName">تطلب منه</h4>
+          <div class="trade-props" id="tradePartnerProps"></div>
+          <label>فلوس تطلبها
+            <input type="number" id="tradePartnerCash" min="0" value="0">
+          </label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-secondary" onclick="playClickSound();skipTrade()">إلغاء</button>
+        <button class="btn-primary" onclick="confirmTrade()">نفّذ المقايضة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== الأصوات ===================== */
+let audioCtx = null;
+let soundEnabled = localStorage.getItem('soundEnabled') !== 'off';
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function beep(freq, duration, type, volume){
+  if(!soundEnabled) return;
+  try{
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = volume || 0.15;
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }catch(e){ /* الصوت غير مدعوم، تجاهل بصمت */ }
+}
+function playClickSound(){ beep(440, 0.12, "square", 0.12); }
+function playBuySound(){
+  /* صوت فلوس (cha-ching) عند الشراء أو التطوير */
+  beep(1046, 0.07, "sine", 0.18);
+  setTimeout(()=>beep(1318, 0.07, "sine", 0.18), 65);
+  setTimeout(()=>beep(1568, 0.16, "sine", 0.22), 130);
+}
+function playSellSound(){
+  /* صوت فلوس عكسي عند البيع */
+  beep(1568, 0.06, "sine", 0.18);
+  setTimeout(()=>beep(1318, 0.06, "sine", 0.18), 55);
+  setTimeout(()=>beep(1046, 0.14, "sine", 0.2), 110);
+}
+function playRentSound(){ beep(220, 0.25, "sawtooth", 0.15); }
+function playSixSound(){ beep(990, 0.1, "square", 0.15); setTimeout(()=>beep(1320,0.15,"square",0.15), 90); }
+function playDiceRollSound(){
+  /* صوت هز الزار قبل ظهور النتيجة */
+  beep(300, 0.05, "square", 0.09);
+  setTimeout(()=>beep(340, 0.05, "square", 0.09), 55);
+  setTimeout(()=>beep(380, 0.05, "square", 0.09), 110);
+  setTimeout(()=>beep(430, 0.08, "square", 0.11), 165);
+}
+function playMoveSound(){
+  /* صوت حركة قطعة صغيرة كل خطوة */
+  beep(700, 0.035, "square", 0.06);
+}
+
+/* ===================== الشاشات (البداية / الأطوار / الإعدادات) ===================== */
+function showScreen(id){
+  ['title-screen','connection-screen','online-lobby-screen','online-waiting-screen','modes-screen','settings-screen','setup','game'].forEach(s=>{
+    const el = document.getElementById(s);
+    if(el) el.style.display = (s === id) ? "block" : "none";
+  });
+}
+
+function updateSoundBtn(){
+  const btn = document.getElementById('soundToggleBtn');
+  if(btn) btn.textContent = soundEnabled ? "🔊 مفعّل" : "🔇 مطفي";
+}
+
+let gameMode = 'offline'; // 'offline' | 'online'
+function chooseConnection(mode){
+  gameMode = mode;
+  const indicator = document.getElementById('modeIndicator');
+  if(indicator){
+    indicator.textContent = mode === 'online' ? "🌐 الوضع: أونلاين" : "📴 الوضع: أوفلاين";
+  }
+  if(mode === 'online'){
+    const nameInput = document.getElementById('onlineNameInput');
+    if(nameInput) nameInput.value = localStorage.getItem('myName') || '';
+    showScreen('online-lobby-screen');
+  } else {
+    showScreen('modes-screen');
+  }
+}
+
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('soundEnabled', soundEnabled ? 'on' : 'off');
+  updateSoundBtn();
+  if(soundEnabled) beep(440, 0.12, "square", 0.12);
+}
+
+function openSettings(){
+  const savedName = localStorage.getItem('myName') || "";
+  document.getElementById('myNameInput').value = savedName;
+  updateSoundBtn();
+  showScreen('settings-screen');
+}
+
+function saveMyName(){
+  const name = document.getElementById('myNameInput').value.trim();
+  if(name) localStorage.setItem('myName', name);
+  else localStorage.removeItem('myName');
+  renderNameInputs();
+  showScreen('modes-screen');
+}
+
+/* ===================== أونلاين (Firebase) ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAjc2K8FKTKcCl5XRvCQ5jz3Ylulei9u6c",
+  authDomain: "monopoly-21820.firebaseapp.com",
+  databaseURL: "https://monopoly-21820-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "monopoly-21820",
+  storageBucket: "monopoly-21820.firebasestorage.app",
+  messagingSenderId: "465887377056",
+  appId: "1:465887377056:web:e1e145a67b4180b82a7bc5"
+};
+let db = null;
+let firebaseReady = false;
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  firebaseReady = true;
+}catch(e){
+  console.error("تعذر تحميل Firebase:", e);
+  firebaseReady = false;
+}
+
+let onlineRoomCode = null;
+let onlineIsHost = false;
+let onlineUid = null;
+let onlineListenerRef = null;
+let applyingRemoteState = false;
+
+function ensureOnlineReady(){
+  if(firebaseReady) return true;
+  const err = document.getElementById('onlineLobbyError');
+  if(err) err.textContent = "تعذر الاتصال بخدمة الأونلاين. جرب تفتح الملف بمتصفح مباشر (كروم/سفاري) بدل معاينة التطبيق، وتأكد من اتصال الإنترنت.";
+  return false;
+}
+
+function generateId(){
+  let id = sessionStorage.getItem('onlineUid');
+  if(!id){
+    id = 'p' + Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem('onlineUid', id);
+  }
+  return id;
+}
+function generateRoomCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = "";
+  for(let i=0;i<5;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function createRoom(){
+  if(!ensureOnlineReady()) return;
+  const name = (document.getElementById('onlineNameInput').value || '').trim() || 'لاعب';
+  onlineUid = generateId();
+  const code = generateRoomCode();
+  db.ref('rooms/'+code).set({
+    hostUid: onlineUid,
+    started: false,
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+    players: { [onlineUid]: { name, joinedAt: firebase.database.ServerValue.TIMESTAMP } }
+  }).then(() => {
+    onlineRoomCode = code;
+    onlineIsHost = true;
+    localStorage.setItem('myName', name);
+    listenToRoom(code);
+    showScreen('online-waiting-screen');
+  }).catch(() => {
+    const err = document.getElementById('onlineLobbyError');
+    if(err) err.textContent = "صار خطأ بإنشاء الغرفة، تأكد من الاتصال وحاول مرة ثانية.";
+  });
+}
+
+function joinRoom(){
+  if(!ensureOnlineReady()) return;
+  const name = (document.getElementById('onlineNameInput').value || '').trim() || 'لاعب';
+  const code = (document.getElementById('joinCodeInput').value || '').trim().toUpperCase();
+  const err = document.getElementById('onlineLobbyError');
+  if(err) err.textContent = "";
+  if(!code){ if(err) err.textContent = "اكتب كود الغرفة أول."; return; }
+  onlineUid = generateId();
+  const roomRef = db.ref('rooms/'+code);
+  roomRef.once('value').then(snap => {
+    const data = snap.val();
+    if(!data){ if(err) err.textContent = "ماكو غرفة بهذا الكود."; return; }
+    if(data.started){ if(err) err.textContent = "اللعبة بهذي الغرفة بدأت خلاص."; return; }
+    const count = Object.keys(data.players || {}).length;
+    if(count >= 4){ if(err) err.textContent = "الغرفة مليانة (4 لاعبين)."; return; }
+    return roomRef.child('players/'+onlineUid).set({
+      name, joinedAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+      onlineRoomCode = code;
+      onlineIsHost = (data.hostUid === onlineUid);
+      localStorage.setItem('myName', name);
+      listenToRoom(code);
+      showScreen('online-waiting-screen');
+    });
+  }).catch(() => {
+    if(err) err.textContent = "صار خطأ، تأكد من الكود وحاول مرة ثانية.";
+  });
+}
+
+function listenToRoom(code){
+  if(onlineListenerRef) onlineListenerRef.off();
+  onlineListenerRef = db.ref('rooms/'+code);
+  onlineListenerRef.on('value', snap => {
+    const data = snap.val();
+    if(!data) return;
+    if(data.started && data.game){
+      if(document.getElementById('game').style.display !== 'block'){
+        enterOnlineGame(data);
+      } else {
+        applyRemoteGameState(data.game);
+      }
+    } else {
+      renderWaitingRoom(data);
+    }
+  });
+}
+
+function renderWaitingRoom(data){
+  const codeEl = document.getElementById('onlineRoomCodeDisplay');
+  if(codeEl) codeEl.textContent = onlineRoomCode;
+  const listEl = document.getElementById('onlineWaitingPlayers');
+  if(listEl){
+    listEl.innerHTML = "";
+    const entries = Object.entries(data.players || {}).sort((a,b) => (a[1].joinedAt||0) - (b[1].joinedAt||0));
+    entries.forEach(([uid, p], i) => {
+      const row = document.createElement('div');
+      row.className = "player-name-row";
+      row.innerHTML = `<span style="background:${PLAYER_COLORS[i % PLAYER_COLORS.length]}"></span><span>${p.name}${uid===data.hostUid ? ' (مضيف)':''}</span>`;
+      listEl.appendChild(row);
+    });
+  }
+  const startBtn = document.getElementById('onlineStartBtn');
+  if(startBtn){
+    const count = Object.keys(data.players||{}).length;
+    if(onlineIsHost){
+      startBtn.style.display = "block";
+      startBtn.disabled = count < 2;
+      startBtn.textContent = count < 2 ? "بانتظار لاعب ثاني..." : "ابدأ اللعبة";
+    } else {
+      startBtn.style.display = "none";
+    }
+  }
+}
+
+function startOnlineGame(){
+  if(!onlineIsHost || !onlineRoomCode) return;
+  db.ref('rooms/'+onlineRoomCode+'/players').once('value').then(snap => {
+    const data = snap.val() || {};
+    const entries = Object.entries(data).sort((a,b) => (a[1].joinedAt||0) - (b[1].joinedAt||0));
+    const initPlayers = entries.map(([uid, p], i) => ({
+      name: p.name, color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+      cash: START_CASH, pos: 0, inJail: false, jailTurns: 0, bankrupt: false, uid
+    }));
+    const initState = {
+      players: initPlayers, ownership: {}, houses: {},
+      currentPlayerIndex: 0, doublesCount: 0, lastDieValue: "-",
+      uiState: { rollDisabled:false, endTurnVisible:false },
+      log: ["بدأت اللعبة أونلاين! بالتوفيق للجميع 🎲"],
+      notice: null, updatedAt: Date.now()
+    };
+    db.ref('rooms/'+onlineRoomCode).update({ started:true, game: initState });
+  });
+}
+
+function enterOnlineGame(data){
+  applyingRemoteState = true;
+  const g = data.game;
+  players = g.players || [];
+  ownership = g.ownership || {};
+  houses = g.houses || {};
+  currentPlayerIndex = g.currentPlayerIndex || 0;
+  doublesCount = g.doublesCount || 0;
+  lastDieValue = g.lastDieValue || "-";
+  if(g.uiState){
+    uiState.rollDisabled = g.uiState.rollDisabled;
+    uiState.endTurnVisible = g.uiState.endTurnVisible;
+  }
+  gameLog = g.log || [];
+  showScreen('game');
+  renderBoard();
+  renderPlayers();
+  renderLog();
+  applyUIState();
+  applyingRemoteState = false;
+}
+
+function applyRemoteGameState(gameData){
+  if(!gameData) return;
+  applyingRemoteState = true;
+  players = gameData.players || players;
+  ownership = gameData.ownership || {};
+  houses = gameData.houses || {};
+  currentPlayerIndex = gameData.currentPlayerIndex || 0;
+  doublesCount = gameData.doublesCount || 0;
+  lastDieValue = gameData.lastDieValue || "-";
+  if(gameData.uiState){
+    uiState.rollDisabled = gameData.uiState.rollDisabled;
+    uiState.endTurnVisible = gameData.uiState.endTurnVisible;
+  }
+  if(gameData.log){ gameLog = gameData.log; renderLog(); }
+  renderBoard();
+  renderPlayers();
+  applyUIState();
+  if(gameData.notice && gameData.notice.ts && gameData.notice.ts !== lastShownNoticeTs){
+    showCenterNotice(gameData.notice.text, gameData.notice.kind, gameData.notice.ts);
+  }
+  checkWinner();
+  applyingRemoteState = false;
+}
+
+function broadcastState(){
+  if(gameMode !== 'online' || !onlineRoomCode || applyingRemoteState) return;
+  db.ref('rooms/'+onlineRoomCode+'/game').set({
+    players: players.map(p => ({
+      name:p.name, color:p.color, cash:p.cash, pos:p.pos,
+      inJail:p.inJail, jailTurns:p.jailTurns, bankrupt:p.bankrupt, uid:p.uid || null
+    })),
+    ownership, houses, currentPlayerIndex, doublesCount, lastDieValue,
+    uiState: { rollDisabled:uiState.rollDisabled, endTurnVisible:uiState.endTurnVisible },
+    log: gameLog,
+    notice: currentNotice,
+    updatedAt: Date.now()
+  });
+}
+
+function isMyTurnOnline(){
+  if(gameMode !== 'online' || !onlineRoomCode) return true;
+  const cur = players[currentPlayerIndex];
+  return !!cur && cur.uid === onlineUid;
+}
+
+/* ===================== إعدادات اللعبة الأساسية ===================== */
+const START_CASH = 1500;
+const GO_BONUS = 300;
+const PLAYER_COLORS = ["#D4AF37","#3E7D5C","#B5442E","#4A7FC1"];
+
+/* ===================== بيانات اللوحة (مبنية على تصميمك) ===================== */
+/* type: corner-start | corner-jail | corner-chance | corner-auction | property | transport | utility */
+const BOARD = [
+  {name:"START", type:"corner-start"},
+  {name:"ريو", type:"property", price:100, rent:10, group:"green"},
+  {name:"دلهي", type:"property", price:100, rent:10, group:"green"},
+  {name:"بانكوك", type:"property", price:130, rent:14, group:"lightblue"},
+  {name:"مصر", type:"property", price:180, rent:18, group:"lightblue"},
+  {name:"مدريد", type:"property", price:150, rent:15, group:"lightblue"},
+  {name:"الميناء", type:"transport", price:200, rent:25},
+  {name:"البصرة", type:"property", price:220, rent:22, group:"black"},
+  {name:"بغداد", type:"property", price:220, rent:22, group:"black"},
+  {name:"CHANCE", type:"corner-chance"},
+  {name:"جاكرتا", type:"property", price:170, rent:17, group:"magenta1"},
+  {name:"برلين", type:"property", price:180, rent:18, group:"magenta1"},
+  {name:"موسكو", type:"property", price:200, rent:20, group:"orange"},
+  {name:"السكة الحديد", type:"transport", price:200, rent:25},
+  {name:"تورونتو", type:"property", price:200, rent:20, group:"orange"},
+  {name:"سيول", type:"property", price:200, rent:20, group:"orange"},
+  {name:"JAIL", type:"corner-jail"},
+  {name:"زيورخ", type:"property", price:250, rent:25, group:"teal"},
+  {name:"الرياض", type:"property", price:250, rent:25, group:"teal"},
+  {name:"سيدني", type:"property", price:300, rent:30, group:"brown"},
+  {name:"الكهرباء", type:"transport", price:150, rent:20},
+  {name:"بكين", type:"property", price:300, rent:30, group:"brown"},
+  {name:"دبي", type:"property", price:300, rent:30, group:"brown"},
+  {name:"بيروت", type:"property", price:180, rent:18, group:"magenta2"},
+  {name:"عمّان", type:"property", price:180, rent:18, group:"magenta2"},
+  {name:"مقايضة", type:"corner-auction"},
+  {name:"باريس", type:"property", price:350, rent:35, group:"purple"},
+  {name:"هونغ كونغ", type:"property", price:350, rent:35, group:"purple"},
+  {name:"لندن", type:"property", price:420, rent:42, group:"red"},
+  {name:"المطار", type:"transport", price:200, rent:25},
+  {name:"طوكيو", type:"property", price:420, rent:42, group:"red"},
+  {name:"نيويورك", type:"property", price:450, rent:45, group:"red"},
+];
+
+const GROUP_COLORS = {
+  green:"#3E7D5C", lightblue:"#4A9FD1", black:"#2b2b2b",
+  magenta1:"#B5427E", orange:"#D97706", teal:"#2F9E8F",
+  brown:"#8B5E34", magenta2:"#D14E85", purple:"#7C4FBF", red:"#C1372E"
+};
+
+let players = [];
+let currentPlayerIndex = 0;
+let ownership = {}; // tileIndex -> playerIndex
+let houses = {}; // tileIndex -> عدد البيوت المبنية (0-4)
+let houseless = true;
+let awaitingDecision = false;
+let pendingIsDouble = false;
+let doublesCount = 0;
+let lastDieValue = "-";
+let isRolling = false;
+const uiState = { rollDisabled:false, endTurnVisible:false };
+
+function setRollDisabled(v){
+  uiState.rollDisabled = v;
+  const b = document.getElementById('rollBtn');
+  if(b) b.disabled = v;
+}
+function setEndTurnVisible(v){
+  uiState.endTurnVisible = v;
+  const b = document.getElementById('endTurnBtn');
+  if(b) b.style.display = v ? "inline-block" : "none";
+}
+function applyUIState(){
+  const rb = document.getElementById('rollBtn');
+  const eb = document.getElementById('endTurnBtn');
+  const myTurn = isMyTurnOnline();
+  if(rb) rb.disabled = uiState.rollDisabled || !myTurn;
+  if(eb) eb.style.display = (uiState.endTurnVisible && myTurn) ? "inline-block" : "none";
+}
+
+/* ===================== شاشة الإعداد ===================== */
+const nameInputs = document.getElementById('nameInputs');
+document.getElementById('playerCount').addEventListener('change', renderNameInputs);
+function renderNameInputs(){
+  const n = parseInt(document.getElementById('playerCount').value);
+  const savedName = localStorage.getItem('myName');
+  nameInputs.innerHTML = "";
+  for(let i=0;i<n;i++){
+    const row = document.createElement('div');
+    row.className = "player-name-row";
+    const defaultName = (i === 0 && savedName) ? savedName : `لاعب ${i+1}`;
+    row.innerHTML = `<span style="background:${PLAYER_COLORS[i]}"></span>
+      <input type="text" placeholder="اسم اللاعب ${i+1}" id="pname${i}" value="${defaultName}">`;
+    nameInputs.appendChild(row);
+  }
+}
+renderNameInputs();
+
+function startGame(){
+  const n = parseInt(document.getElementById('playerCount').value);
+  players = [];
+  for(let i=0;i<n;i++){
+    const name = document.getElementById('pname'+i).value || `لاعب ${i+1}`;
+    players.push({
+      name, color: PLAYER_COLORS[i], cash: START_CASH, pos: 0,
+      inJail:false, jailTurns:0, bankrupt:false
+    });
+  }
+  document.getElementById('setup').style.display = "none";
+  document.getElementById('game').style.display = "block";
+  renderBoard();
+  renderPlayers();
+  log("بدأت اللعبة! بالتوفيق للجميع 🎲");
+}
+
+/* ===================== رسم اللوحة ===================== */
+/* ترتيب BOARD يتبع محيط اللوحة بهذا الشكل:
+   0 = START (زاوية سفلى-يسار) → 1-8 عمود يسار (من الأسفل للأعلى)
+   9 = CHANCE (زاوية عليا-يسار) → 10-15 صف علوي
+   16 = JAIL (زاوية عليا-يمين) → 17-24 عمود يمين (من الأعلى للأسفل)
+   25 = AUCTION (زاوية سفلى-يمين) → 26-31 صف سفلي (من اليمين لليسار) */
+function gridPosFor(idx){
+  if(idx === 0) return {row:10, col:1};
+  if(idx >= 1 && idx <= 8) return {row: 9-(idx-1), col:1};
+  if(idx === 9) return {row:1, col:1};
+  if(idx >= 10 && idx <= 15) return {row:1, col: 2+(idx-10)};
+  if(idx === 16) return {row:1, col:8};
+  if(idx >= 17 && idx <= 24) return {row: 2+(idx-17), col:8};
+  if(idx === 25) return {row:10, col:8};
+  if(idx >= 26 && idx <= 31) return {row:10, col: 7-(idx-26)};
+}
+
+function cornerIcon(type){
+  return {"corner-start":"🚩","corner-jail":"🔒","corner-chance":"❓","corner-auction":"🤝"}[type] || "";
+}
+
+const TRANSPORT_COLORS = {
+  "الميناء":"#2F6E45",
+  "السكة الحديد":"#1F6FB2",
+  "المطار":"#B5442E",
+  "الكهرباء":"#B8860B"
+};
+
+function renderBoard(){
+  const wrap = document.getElementById('board-grid-container');
+  wrap.innerHTML = "";
+
+  const grid = document.createElement('div');
+  grid.className = "board-grid";
+
+  BOARD.forEach((tile, idx) => {
+    const div = document.createElement('div');
+    div.className = "tile" + (tile.type.startsWith('corner') ? " corner" : "") + (idx===0 ? " tile-start" : "");
+    div.id = "tile-"+idx;
+    const pos = gridPosFor(idx);
+    div.style.gridRow = pos.row;
+    div.style.gridColumn = pos.col;
+
+    let barColor = "#444";
+    let ownerBarColor = "transparent";
+    const h = houses[idx] || 0;
+
+    if(tile.type === "property"){
+      barColor = GROUP_COLORS[tile.group];
+    } else if(tile.type === "transport"){
+      barColor = TRANSPORT_COLORS[tile.name] || "#2F6E45";
+    }
+
+    const isOwned = ownership[idx] !== undefined;
+    if(isOwned){
+      ownerBarColor = players[ownership[idx]].color;
+    }
+    const topBarColor = isOwned ? ownerBarColor : barColor;
+    const topBarText = isOwned
+      ? `$${calcRent(idx, ownership[idx])}${h>0 ? ` ${"🏠".repeat(h)}` : ""}`
+      : `$${tile.price}`;
+
+    if(tile.type.startsWith('corner')){
+      div.innerHTML = `
+        <div class="corner-icon">${cornerIcon(tile.type)}</div>
+        <div class="corner-name">${tile.name}</div>
+        <div class="tokens-on-tile" id="tokens-${idx}"></div>
+      `;
+    } else {
+      div.innerHTML = `
+        <div class="owner-bar" style="background:${ownerBarColor}"></div>
+        <div class="tile-top" style="background:${topBarColor}">${topBarText}</div>
+        <div class="tile-name">${tile.name}</div>
+        <div class="tokens-on-tile" id="tokens-${idx}"></div>
+      `;
+    }
+    if(isOwned){
+      div.style.outline = `2px solid ${ownerBarColor}`;
+      div.style.outlineOffset = "-2px";
+    }
+    grid.appendChild(div);
+  });
+
+  const center = document.createElement('div');
+  center.className = "center-area";
+  center.id = "center-area";
+  center.innerHTML = `
+    <div class="center-notice" id="centerNotice"></div>
+    <div class="building">🏛️</div>
+    <div class="brand">المدن العالمية</div>
+    <div class="turn-label">الدور الحالي</div>
+    <div class="turn-name" id="centerTurnName">—</div>
+    <div class="dice-row">
+      <div class="die" id="die1">${lastDieValue}</div>
+    </div>
+    <button class="btn-primary" id="rollBtn" onclick="playClickSound();rollDice()">ارمِ النرد 🎲</button>
+    <div class="center-props">
+      <h4>ممتلكاتي</h4>
+      <div id="myPropsList"></div>
+    </div>
+  `;
+  grid.appendChild(center);
+
+  wrap.appendChild(grid);
+  placeTokens();
+  applyUIState();
+  renderMyProperties();
+  broadcastState();
+}
+
+const CORNER_CLASSES = ["tl","tr","bl","br"];
+
+function placeTokens(){
+  document.querySelectorAll('.tokens-on-tile').forEach(el => el.innerHTML = "");
+  document.querySelectorAll('.tile').forEach(el => el.classList.remove('current'));
+  players.forEach((p, i) => {
+    if(p.bankrupt) return;
+    const cont = document.getElementById('tokens-'+p.pos);
+    if(cont){
+      const tok = document.createElement('div');
+      tok.className = "token corner-"+CORNER_CLASSES[i % 4];
+      tok.style.background = p.color;
+      tok.title = p.name;
+      tok.textContent = p.name.trim().charAt(0);
+      cont.appendChild(tok);
+    }
+  });
+  const active = players[currentPlayerIndex];
+  if(active && !active.bankrupt){
+    const t = document.getElementById('tile-'+active.pos);
+    if(t) t.classList.add('current');
+    const centerName = document.getElementById('centerTurnName');
+    if(centerName) centerName.textContent = active.name;
+  }
+}
+
+/* ===================== قائمة اللاعبين الجانبية ===================== */
+function renderPlayers(){
+  const list = document.getElementById('players-list');
+  list.innerHTML = "";
+  players.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = "player-card" + (i===currentPlayerIndex ? " active":"") + (p.bankrupt ? " bankrupt":"");
+    div.innerHTML = `
+      <span class="dot" style="background:${p.color}"></span>
+      <span class="pname">${p.name}${p.inJail ? " 🔒":""}</span>
+      <span class="pcash">$${p.cash}</span>
+    `;
+    list.appendChild(div);
+  });
+  broadcastState();
+}
+
+/* ===================== السجل ===================== */
+let gameLog = [];
+function log(msg){
+  gameLog.unshift(msg);
+  if(gameLog.length > 50) gameLog.length = 50;
+  renderLog();
+}
+function renderLog(){
+  const l = document.getElementById('log');
+  if(!l) return;
+  l.innerHTML = "";
+  gameLog.forEach(msg => {
+    const d = document.createElement('div');
+    d.textContent = msg;
+    l.appendChild(d);
+  });
+}
+
+/* ===================== النرد والحركة ===================== */
+function rollDice(){
+  if(!isMyTurnOnline()) return;
+  if(awaitingDecision || isRolling) return;
+  isRolling = true;
+  setRollDisabled(true);
+  const dieEl = document.getElementById('die1');
+  if(dieEl) dieEl.classList.add('rolling');
+  playDiceRollSound();
+
+  const finalValue = 1 + Math.floor(Math.random()*6);
+  const delays = [55,60,70,85,105,130,160,200,240];
+  let step = 0;
+
+  function tick(){
+    if(!dieEl) return;
+    if(step < delays.length){
+      dieEl.textContent = 1 + Math.floor(Math.random()*6);
+      setTimeout(tick, delays[step]);
+      step++;
+    } else {
+      dieEl.classList.remove('rolling');
+      dieEl.textContent = finalValue;
+      lastDieValue = finalValue;
+      isRolling = false;
+      processDiceResult(finalValue);
+    }
+  }
+  tick();
+}
+
+function processDiceResult(d1){
+  const isSix = d1 === 6;
+  if(isSix) playSixSound();
+  const player = players[currentPlayerIndex];
+
+  if(player.inJail){
+    if(isSix){
+      player.inJail = false;
+      player.jailTurns = 0;
+      log(`${player.name} رمى 6 وخرج من السجن! 🔓`);
+      movePlayer(player, d1);
+    } else {
+      player.jailTurns++;
+      if(player.jailTurns >= 3){
+        player.cash -= 50;
+        player.inJail = false;
+        player.jailTurns = 0;
+        log(`${player.name} دفع 50$ للخروج من السجن بعد 3 محاولات.`);
+        renderPlayers();
+        movePlayer(player, d1);
+      } else {
+        showCenterNotice(`🔒 ${player.name} ما زال بالسجن (لم يرمِ 6) — المحاولة ${player.jailTurns}/3`, "danger");
+        setRollDisabled(true);
+        setEndTurnVisible(false);
+        setTimeout(() => { if(isMyTurnOnline()) endTurn(); }, 1400);
+      }
+    }
+    return;
+  }
+
+  if(isSix){
+    doublesCount++;
+    if(doublesCount === 3){
+      log(`${player.name} رمى 6 ثلاث مرات متتالية! إلى السجن مباشرة 🚔`);
+      showCenterNotice(`🚔 ${player.name} رمى 6 ثلاث مرات متتالية — إلى السجن!`, "danger");
+      sendToJail(player);
+      doublesCount = 0;
+      setRollDisabled(true);
+      setEndTurnVisible(false);
+      setTimeout(() => { if(isMyTurnOnline()) endTurn(); }, 1400);
+      return;
+    }
+  } else {
+    doublesCount = 0;
+  }
+
+  movePlayer(player, d1, isSix);
+}
+
+function movePlayer(player, steps, isDouble){
+  setRollDisabled(true);
+  let remaining = steps;
+  function stepOnce(){
+    if(remaining <= 0){
+      log(`${player.name} وصل إلى "${BOARD[player.pos].name}"`);
+      setTimeout(() => resolveTile(player, isDouble), 400);
+      return;
+    }
+    player.pos = (player.pos + 1) % BOARD.length;
+    playMoveSound();
+    placeTokens();
+    remaining--;
+    setTimeout(stepOnce, 480);
+  }
+  stepOnce();
+}
+
+/* ===================== منطق المربعات ===================== */
+function resolveTile(player, isDouble){
+  const tile = BOARD[player.pos];
+
+  if(tile.type === "property" || tile.type === "transport"){
+    const owner = ownership[player.pos];
+    if(owner === undefined){
+      awaitingDecision = true;
+      pendingIsDouble = isDouble;
+      document.getElementById('buyGroupLabel').textContent = tile.type === "property" ? (tile.group || "PROPERTY").toUpperCase() : tile.type.toUpperCase();
+      document.getElementById('buyTileName').textContent = tile.name;
+      document.getElementById('buyTilePrice').textContent = `السعر: $${tile.price} — رصيدك: $${player.cash}`;
+      document.getElementById('buyModal').style.display = "flex";
+    } else if(owner !== currentPlayerIndex){
+      const rentOwed = calcRent(player.pos, owner);
+      player.cash -= rentOwed;
+      players[owner].cash += rentOwed;
+      playRentSound();
+      renderPlayers();
+      showCenterNotice(`💸 ${player.name} دفع $${rentOwed} إيجار إلى ${players[owner].name}`, "danger");
+      log(`${player.name} دفع $${rentOwed} إيجار لـ ${players[owner].name}`);
+      checkBankruptcy(player, owner);
+      finishTurnFlow(isDouble);
+    } else {
+      finishTurnFlow(isDouble);
+    }
+  } else if(tile.type === "corner-chance"){
+    drawChance(player);
+    finishTurnFlow(isDouble);
+  } else if(tile.type === "corner-jail" || tile.type === "corner-start"){
+    finishTurnFlow(isDouble);
+  } else if(tile.type === "corner-auction"){
+    openTradeModal(player, isDouble);
+  }
+}
+
+function groupOwnedFully(ownerIdx, group){
+  const groupTiles = BOARD.map((t,i)=>({t,i})).filter(x => x.t.type === "property" && x.t.group === group);
+  return groupTiles.length > 0 && groupTiles.every(x => ownership[x.i] === ownerIdx);
+}
+
+function houseCost(tile){ return Math.round(tile.price/2); }
+
+function baseRent(tile){ return Math.round(tile.price * 0.3); }
+
+const TRANSPORT_RENT_BY_COUNT = {1:60, 2:90, 3:160, 4:220};
+
+function calcRent(tileIdx, ownerIdx){
+  const tile = BOARD[tileIdx];
+  const base = baseRent(tile);
+  let rent = base;
+  if(tile.type === "property" && tile.group){
+    const h = houses[tileIdx] || 0;
+    if(h > 0){
+      rent = base * (h + 2); // كل تطويرة تزيد الأجرة من أول بيت، بدل ما تتساوى مع أجرة المجموعة الكاملة
+    } else if(groupOwnedFully(ownerIdx, tile.group)){
+      rent = base * 2;
+    }
+  } else if(tile.type === "transport"){
+    const ownedCount = BOARD.filter((t,i) => t.type === "transport" && ownership[i] === ownerIdx).length;
+    rent = TRANSPORT_RENT_BY_COUNT[ownedCount] || TRANSPORT_RENT_BY_COUNT[4];
+  }
+  return rent;
+}
+
+function checkBankruptcy(player, creditorIdx){
+  if(player.cash <= -600){
+    log(`${player.name} أفلس! 💥 صار متفرج، وممتلكاته كلها رجعت للبنك وتكدرون تشترونها من جديد`);
+    player.bankrupt = true;
+    // ترجع كل ممتلكاته للبنك (بدل ما تنعطى للدائن) حتى تصير قابلة للشراء من جديد
+    Object.keys(ownership).forEach(k => {
+      if(ownership[k] === players.indexOf(player)){
+        delete ownership[k];
+        delete houses[k];
+      }
+    });
+    renderBoard();
+    renderMyProperties();
+    checkWinner();
+  }
+}
+
+function sendToJail(player){
+  player.pos = BOARD.findIndex(t => t.type === "corner-jail");
+  player.inJail = true;
+  player.jailTurns = 0;
+  renderPlayers();
+  placeTokens();
+}
+
+/* ===================== بطاقات الحظ ===================== */
+const CHANCE_CARDS = [
+  {text:"حصلت على منحة سفر! اجمع $100", effect:p=>p.cash+=100},
+  {text:"غرامة تأخير بالمطار. ادفع $75", effect:p=>p.cash-=75},
+  {text:"ربحت مسابقة سياحية! اجمع $150", effect:p=>p.cash+=150},
+  {text:"ضريبة عبور حدود. ادفع $50", effect:p=>p.cash-=50},
+  {text:"استرداد ضريبي! اجمع $50", effect:p=>p.cash+=50},
+  {text:"دفعت غرامة جواز سفر منتهي. ادفع $100", effect:p=>p.cash-=100},
+];
+function drawChance(player){
+  const card = CHANCE_CARDS[Math.floor(Math.random()*CHANCE_CARDS.length)];
+  const before = player.cash;
+  card.effect(player);
+  const gained = player.cash >= before;
+  renderPlayers();
+  showCenterNotice(`🎴 ${card.text}`, gained ? "success" : "danger");
+  log(`بطاقة حظ لـ ${player.name}: ${card.text}`);
+  checkBankruptcy(player, null);
+}
+
+/* ===================== تنبيهات داخل مربع اللعب ===================== */
+let noticeTimer = null;
+let lastShownNoticeTs = 0;
+let currentNotice = null;
+function showCenterNotice(text, kind, ts){
+  const noticeTs = ts || Date.now();
+  lastShownNoticeTs = noticeTs;
+  currentNotice = { text, kind: kind || "", ts: noticeTs };
+  const el = document.getElementById('centerNotice');
+  if(!el) return;
+  el.textContent = text;
+  el.className = "center-notice show" + (kind ? " notice-" + kind : "");
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2800);
+}
+
+/* ===================== الشراء ===================== */
+function confirmBuy(){
+  if(!isMyTurnOnline()) return;
+  const player = players[currentPlayerIndex];
+  const tile = BOARD[player.pos];
+  if(player.cash >= tile.price){
+    player.cash -= tile.price;
+    ownership[player.pos] = currentPlayerIndex;
+    playBuySound();
+    log(`${player.name} اشترى "${tile.name}" مقابل $${tile.price}`);
+    renderPlayers();
+    renderBoard();
+    renderMyProperties();
+  } else {
+    log(`${player.name} لا يملك رصيدًا كافيًا لشراء "${tile.name}"`);
+  }
+  document.getElementById('buyModal').style.display = "none";
+  awaitingDecision = false;
+  finishTurnFlow(pendingIsDouble);
+}
+function skipBuy(){
+  if(!isMyTurnOnline()) return;
+  document.getElementById('buyModal').style.display = "none";
+  awaitingDecision = false;
+  finishTurnFlow(pendingIsDouble);
+}
+
+/* ===================== المقايضة ===================== */
+let tradeState = { partnerIdx:null };
+
+function ownedTradeableTiles(playerIdx){
+  return Object.keys(ownership)
+    .map(Number)
+    .filter(idx => ownership[idx] === playerIdx && (houses[idx]||0) === 0);
+}
+
+function openTradeModal(player, isDouble){
+  if(!isMyTurnOnline()){ finishTurnFlow(isDouble); return; }
+  awaitingDecision = true;
+  pendingIsDouble = isDouble;
+  tradeState = { partnerIdx:null };
+  const list = document.getElementById('tradePartnerList');
+  list.innerHTML = "";
+  const others = players.filter((p,i) => i !== currentPlayerIndex && !p.bankrupt);
+  if(others.length === 0){
+    log(`${player.name} وصل لمربع المقايضة — ماكو لاعبين آخرين للمقايضة وياهم.`);
+    finishTurnFlow(isDouble);
+    return;
+  }
+  others.forEach(p => {
+    const idx = players.indexOf(p);
+    const btn = document.createElement('button');
+    btn.className = "trade-partner-btn";
+    btn.textContent = p.name;
+    btn.onclick = () => { playClickSound(); selectTradePartner(idx); };
+    list.appendChild(btn);
+  });
+  document.getElementById('tradePartnerStep').style.display = "block";
+  document.getElementById('tradeOfferStep').style.display = "none";
+  document.getElementById('tradeModal').style.display = "flex";
+}
+
+function renderTradePropList(containerId, playerIdx){
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  const tiles = ownedTradeableTiles(playerIdx);
+  if(tiles.length === 0){
+    container.innerHTML = `<div class="trade-empty">ماكو ممتلكات قابلة للمقايضة</div>`;
+    return;
+  }
+  tiles.forEach(idx => {
+    const tile = BOARD[idx];
+    const row = document.createElement('label');
+    row.className = "trade-prop-row";
+    row.innerHTML = `<input type="checkbox" value="${idx}"><span>${tile.name}</span>`;
+    container.appendChild(row);
+  });
+}
+
+function selectTradePartner(idx){
+  tradeState.partnerIdx = idx;
+  const me = players[currentPlayerIndex];
+  const partner = players[idx];
+  document.getElementById('tradeMyName').textContent = `أنت تعطي (${me.name})`;
+  document.getElementById('tradePartnerName').textContent = `تطلب من ${partner.name}`;
+  renderTradePropList('tradeMyProps', currentPlayerIndex);
+  renderTradePropList('tradePartnerProps', idx);
+  document.getElementById('tradeMyCash').value = 0;
+  document.getElementById('tradePartnerCash').value = 0;
+  document.getElementById('tradePartnerStep').style.display = "none";
+  document.getElementById('tradeOfferStep').style.display = "block";
+}
+
+function confirmTrade(){
+  if(!isMyTurnOnline()) return;
+  const me = players[currentPlayerIndex];
+  const partnerIdx = tradeState.partnerIdx;
+  const partner = players[partnerIdx];
+  const myCash = Math.max(0, parseInt(document.getElementById('tradeMyCash').value) || 0);
+  const partnerCash = Math.max(0, parseInt(document.getElementById('tradePartnerCash').value) || 0);
+  const myTiles = Array.from(document.querySelectorAll('#tradeMyProps input:checked')).map(el => Number(el.value));
+  const partnerTiles = Array.from(document.querySelectorAll('#tradePartnerProps input:checked')).map(el => Number(el.value));
+
+  if(myCash > me.cash){
+    showCenterNotice(`❌ ما عندك $${myCash} كافية للمقايضة`, "danger");
+    return;
+  }
+  if(partnerCash > partner.cash){
+    showCenterNotice(`❌ ${partner.name} ما عنده $${partnerCash} كافية`, "danger");
+    return;
+  }
+
+  me.cash -= myCash; partner.cash += myCash;
+  partner.cash -= partnerCash; me.cash += partnerCash;
+  myTiles.forEach(idx => ownership[idx] = partnerIdx);
+  partnerTiles.forEach(idx => ownership[idx] = currentPlayerIndex);
+
+  playBuySound();
+  log(`${me.name} سوّى مقايضة وياه ${partner.name} 🤝`);
+  showCenterNotice(`🤝 تمت المقايضة بين ${me.name} و${partner.name}`, "");
+  renderPlayers();
+  renderBoard();
+  renderMyProperties();
+
+  document.getElementById('tradeModal').style.display = "none";
+  awaitingDecision = false;
+  finishTurnFlow(pendingIsDouble);
+}
+
+function skipTrade(){
+  if(!isMyTurnOnline()) return;
+  document.getElementById('tradeModal').style.display = "none";
+  awaitingDecision = false;
+  finishTurnFlow(pendingIsDouble);
+}
+
+/* ===================== بيع وتطوير الممتلكات ===================== */
+function buildHouse(tileIdx){
+  if(!isMyTurnOnline()) return;
+  const player = players[currentPlayerIndex];
+  const tile = BOARD[tileIdx];
+  if(ownership[tileIdx] !== currentPlayerIndex) return;
+  if(tile.type !== "property" || !groupOwnedFully(currentPlayerIndex, tile.group)) return;
+  const h = houses[tileIdx] || 0;
+  if(h >= 4){
+    log(`"${tile.name}" وصلت لأعلى مستوى تطوير.`);
+    return;
+  }
+  const cost = houseCost(tile);
+  if(player.cash < cost){
+    log(`${player.name} ما عنده رصيد كافي للتطوير ($${cost}).`);
+    return;
+  }
+  player.cash -= cost;
+  houses[tileIdx] = h + 1;
+  playBuySound();
+  log(`${player.name} طوّر "${tile.name}" 🏠(${houses[tileIdx]}) مقابل $${cost}`);
+  renderPlayers();
+  renderMyProperties();
+  renderBoard();
+}
+
+function sellProperty(tileIdx){
+  if(!isMyTurnOnline()) return;
+  const player = players[currentPlayerIndex];
+  const tile = BOARD[tileIdx];
+  if(ownership[tileIdx] !== currentPlayerIndex) return;
+  const h = houses[tileIdx] || 0;
+  let refund = Math.round(tile.price / 2);
+  if(h > 0){
+    refund += h * Math.round(houseCost(tile) / 2);
+    houses[tileIdx] = 0;
+  }
+  player.cash += refund;
+  delete ownership[tileIdx];
+  playSellSound();
+  log(`${player.name} باع "${tile.name}" مقابل $${refund}`);
+  renderPlayers();
+  renderMyProperties();
+  renderBoard();
+}
+
+function renderMyProperties(){
+  const panel = document.getElementById('myPropsList');
+  if(!panel) return;
+  const player = players[currentPlayerIndex];
+  panel.innerHTML = "";
+  if(!player || player.bankrupt) return;
+  const owned = Object.keys(ownership)
+    .map(Number)
+    .filter(idx => ownership[idx] === currentPlayerIndex);
+  if(owned.length === 0){
+    panel.innerHTML = `<div style="color:#8fa3b8;font-size:0.78rem;">ماكو ممتلكات بعد</div>`;
+    return;
+  }
+  owned.forEach(idx => {
+    const tile = BOARD[idx];
+    const h = houses[idx] || 0;
+    const canBuild = tile.type === "property" && groupOwnedFully(currentPlayerIndex, tile.group) && h < 4;
+    const myTurn = isMyTurnOnline();
+    const row = document.createElement('div');
+    row.className = "prop-row";
+    row.innerHTML = `
+      <span class="prop-name">${tile.name}${h>0 ? ` 🏠×${h}` : ""}</span>
+      <div class="prop-actions">
+        ${(myTurn && canBuild) ? `<button class="btn-mini btn-build" onclick="buildHouse(${idx})">طوّر</button>` : ""}
+        ${myTurn ? `<button class="btn-mini btn-sell" onclick="sellProperty(${idx})">بيع</button>` : ""}
+      </div>
+    `;
+    panel.appendChild(row);
+  });
+}
+
+/* ===================== نهاية الدور ===================== */
+function finishTurnFlow(isDouble){
+  if(isDouble && !players[currentPlayerIndex].inJail){
+    log(`${players[currentPlayerIndex].name} رمى 6، له دور إضافي!`);
+    setRollDisabled(false);
+    setEndTurnVisible(false);
+  } else {
+    setRollDisabled(true);
+    setEndTurnVisible(false);
+    setTimeout(() => { if(isMyTurnOnline()) endTurn(); }, 1400);
+  }
+}
+
+function endTurn(){
+  if(!isMyTurnOnline()) return;
+  setEndTurnVisible(false);
+  setRollDisabled(false);
+  doublesCount = 0;
+  nextPlayer();
+}
+
+function nextPlayer(){
+  do{
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  } while(players[currentPlayerIndex].bankrupt);
+  renderPlayers();
+  placeTokens();
+  renderMyProperties();
+  log(`— دور ${players[currentPlayerIndex].name} —`);
+}
+
+function checkWinner(){
+  const alive = players.filter(p => !p.bankrupt);
+  if(alive.length === 1){
+    document.getElementById('game').style.display = "none";
+    document.getElementById('winner-screen').style.display = "block";
+    document.getElementById('winnerText').textContent = `🏆 ${alive[0].name} يفوز باللعبة!`;
+  }
+}
+</script>
+</body>
+</html>
